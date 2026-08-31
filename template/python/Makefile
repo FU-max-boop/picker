@@ -8,7 +8,7 @@ all: test clean
 test: compile
 	@rm *.a 2>/dev/null || true
 	@echo "--------------Compile Success Test Step DUT--------------------"
-	@cd ../ && PYTHONPATH=.:{{__XSPCOMM_PYTHON__}}/.. python3 example.py && rm -rf *.fst *.vcd *.fsdb *.log *.key 2>/dev/null || (echo "Error: Test failed, plz check whether behavior is correct" && sleep 10)
+	@cd ../ && PYTHONPATH=.:{{__XSPCOMM_PYTHON__}}/.. python3 example.py && rm -rf *.fst *.vcd *.fsdb *.log *.key 2>/dev/null || { status=$$?; echo "Error: Test failed with status $$status, please check whether behavior is correct" >&2; exit $$status; }
 	@echo "--------------------------------------------------------------"
 
 # copy xspcomm lib
