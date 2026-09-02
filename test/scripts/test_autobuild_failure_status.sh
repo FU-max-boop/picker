@@ -16,6 +16,8 @@ PICKER_BIN="$(resolve_picker)"
 ROOT_DIR="${ROOT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 TEST_TMP="$(mktemp -d "${TMPDIR:-/tmp}/picker-autobuild-failure.XXXXXX")"
 trap 'rm -rf -- "${TEST_TMP}"' EXIT
+LOG_DIR="${TEST_TMP}/logs"
+mkdir -p "${LOG_DIR}"
 
 cp -R "${ROOT_DIR}/template" "${TEST_TMP}/template"
 cp "${ROOT_DIR}/test/data/failing_example.py" "${TEST_TMP}/template/python/example.py"
@@ -33,7 +35,7 @@ run_template_case() {
   local language="$1"
   local expected_status="$2"
   local case_dir="${TEST_TMP}/template-${language}-${expected_status}/binding"
-  local log_file="${TEST_TMP}/template-${language}-${expected_status}.log"
+  local log_file="${LOG_DIR}/template-${language}-${expected_status}.log"
   local make_status
 
   mkdir -p "${case_dir}"
@@ -47,7 +49,7 @@ run_template_case() {
 
   set +e
   PICKER_EXAMPLE_STATUS="${expected_status}" PATH="${SHIM_BIN}:${PATH}" \
-    make -s -C "${case_dir}" -f Makefile -o compile all >"${log_file}" 2>&1
+    make -s -C "${case_dir}" -f Makefile -o compile MAKE="make -o compile" all >"${log_file}" 2>&1
   make_status=$?
   set -e
 
@@ -76,7 +78,7 @@ run_failure_case() {
   local language="$1"
   local marker="$2"
   local output_dir="${TEST_TMP}/output-${language}"
-  local log_file="${TEST_TMP}/${language}.log"
+  local log_file="${LOG_DIR}/${language}.log"
   local picker_status
 
   blue "[autobuild-failure] Verifying ${language} example failures reach Picker"
